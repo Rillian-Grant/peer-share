@@ -34,14 +34,17 @@ export const setupPeer = (id: string | undefined = undefined): AppThunk => (disp
     peer.on("open", id => dispatch(peerReady(id)))
     peer.on("error", err => dispatch(peerError(err.toString())))
     peer.on("connection", conn => {
-        console.log("Connection established from peer: ", conn.peer)
         peer_connection_objects[conn.peer] = conn;
-        dispatch(connectionReady(conn.peer))
-
-        conn.on("data", data => dispatch(parseData(data)))
-        conn.on("close", () => dispatch(connectionRemove(conn.peer)))
+        dispatch(connectionLoading(conn.peer))
+        conn.on("open", () => {
+            console.log("Connection established from peer: ", conn.peer)
+            dispatch(connectionReady(conn.peer))
+            
+            conn.on("data", data => dispatch(parseData(data)))
+            conn.on("close", () => dispatch(connectionRemove(conn.peer)))
 
         sendPeerList(conn);
+        })
     })
 }
 
@@ -75,8 +78,8 @@ export const connectPeer = (id: string): AppThunk => (dispatch, getState) => {
     dispatch(connectionLoading(id));
     const connection = peer!.connect(id);
     connection.on("open", () => {
-        console.log("Connected to peer: ", connection.peer)
         connection.on("data", data => dispatch(parseData(data)))
+        console.log("Connected to peer: ", connection.peer)
 
         dispatch(connectionReady(id))
 
