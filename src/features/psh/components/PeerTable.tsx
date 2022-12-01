@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppSelector, useAppDispatch } from '../../../app/hooks';
-import { setupPeer, selectPsh, connectPeer, sendData, Data } from '../pshSlice';
+import { setupPeer, selectPsh, connectPeer, sendFile, Data } from '../pshSlice';
 
 import { Table } from "react-bootstrap";
 

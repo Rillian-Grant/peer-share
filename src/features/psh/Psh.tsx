@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { PshNavbar } from './components/PshNavbar';
-import { setupPeer, selectPsh, connectPeer, sendData, Data } from './pshSlice';
+import { setupPeer, selectPsh, connectPeer, sendFile, Data } from './pshSlice';
 
 import { Nav, Container } from "react-bootstrap";
 import PeerTable from './components/PeerTable';
+import Files from './components/Files';
 
 export function Psh() {
     const peer = useAppSelector(selectPsh);
@@ -43,6 +44,7 @@ export function Psh() {
                     </Nav.Item>
                 </Nav>
                 { tab === "peers" && <PeerTable /> }
+                { tab === "share" && <Files /> }
             </Container>
         </>
     )

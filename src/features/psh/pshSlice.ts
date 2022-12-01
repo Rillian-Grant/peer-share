@@ -8,6 +8,13 @@ var peer_connection_objects: { [id: string]: DataConnection } = {};
 export interface Data {
     log?: string,
     peerData?: { id: string }[]
+    file?: File
+}
+
+export interface File {
+    id: string,
+    name: string | null,
+    contents: string
 }
 
 export interface PshState {
@@ -17,14 +24,14 @@ export interface PshState {
         id: string,
         status: "ready" | "loading" | "error"
     }[]
-    data: Data[]
+    files: File[]
 }
 
 const initialState: PshState = {
     id: null,
     status: "off",
     peers: [],
-    data: []
+    files: []
 }
 
 export const setupPeer = (id: string | undefined = undefined): AppThunk => (dispatch, getState) => {
@@ -109,14 +116,20 @@ const parseData = (data: any): AppThunk => (dispatch, getState) => {
         console.log("Finished processing peer list")
     }
 
-    dispatch(receiveData(data));
+    if ("file" in data) {
+        dispatch(receiveFile(data.file));
+    }
 }
 
-export const sendData = (data: Data): AppThunk => (dispatch, getState) => {
+export const sendFile = (file: File): AppThunk => (dispatch, getState) => {
     var psh = getState().psh;
+    const payload: Data = {
+        file
+    }
     psh.peers.map(peer => peer.id).map(id => peer_connection_objects[id]).forEach(conn => {
-        conn.send(data);
+        conn.send(payload);
     });
+    dispatch(receiveFile(file))
 }
 
 export const pshSlice = createSlice({
@@ -177,13 +190,13 @@ export const pshSlice = createSlice({
         connectionRemove: (state, action: PayloadAction<string>) => {
             state.peers = state.peers.filter(peer => peer.id !== action.payload);
         },
-        receiveData: (state, action: PayloadAction<Data>) => {
-            state.data.push(action.payload);
+        receiveFile: (state, action: PayloadAction<File>) => {
+            state.files = [action.payload, ...state.files];
         }
     }
 })
 
-const { peerLoading, peerReady, peerError, peerOff, connectionLoading, connectionReady, connectionError, connectionRemove, receiveData } = pshSlice.actions
+const { peerLoading, peerReady, peerError, peerOff, connectionLoading, connectionReady, connectionError, connectionRemove, receiveFile } = pshSlice.actions
 
 export const selectPsh = (state: RootState) => state.psh // TODO: Check if needed
 
